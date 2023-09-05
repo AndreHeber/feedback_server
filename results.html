@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Results</title>
+</head>
+<body>
+	<h1>Results</h1>
+	<table border="1">
+		<tr>
+			<th>Answer 1</th>
+			<th>Answer 2</th>
+			<th>Answer 3</th>
+		</tr>
+		{{range .}}
+		<tr>
+			<td>{{.answer1}}</td>
+			<td>{{.answer2}}</td>
+			<td>{{.answer3}}</td>
+		</tr>
+		{{end}}
+	</table>
+</body>
+</html>
