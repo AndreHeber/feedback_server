@@ -53,6 +53,9 @@ func main() {
 	http.HandleFunc("/", formPage)
 	http.HandleFunc("/submit", submitForm)
 	http.HandleFunc("/results", showResults)
+	http.HandleFunc("/admin", adminPage)
+	http.HandleFunc("/admin/add", addQuestion)
+	http.HandleFunc("/admin/delete", deleteQuestion)
 
 	fmt.Println("Server is running on port 8080...")
 	http.ListenAndServe(":8080", nil)
@@ -179,4 +182,75 @@ func showResults(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	t.Execute(w, results)
+}
+
+func adminPage(w http.ResponseWriter, r *http.Request) {
+	rows, err := db.Query("SELECT id, question, type FROM questions")
+	if err != nil {
+		log.Printf("Error querying questions: %v", err)
+		http.Error(w, "Failed to query database", http.StatusInternalServerError)
+		return
+	}
+	defer rows.Close()
+
+	var questions []map[string]interface{}
+	for rows.Next() {
+		var id int
+		var question, qType string
+		if err := rows.Scan(&id, &question, &qType); err != nil {
+			log.Printf("Error scanning rows: %v", err)
+			http.Error(w, "Failed to scan row", http.StatusInternalServerError)
+			return
+		}
+		questions = append(questions, map[string]interface{}{
+			"id":       id,
+			"question": question,
+			"type":     qType,
+		})
+	}
+
+	t, err := template.ParseFiles("admin.html")
+	if err != nil {
+		log.Printf("Error parsing template: %v", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	t.Execute(w, questions)
+}
+
+func addQuestion(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	question := r.FormValue("question")
+	qType := r.FormValue("type")
+
+	_, err := db.Exec("INSERT INTO questions (question, type) VALUES (?, ?)", question, qType)
+	if err != nil {
+		log.Printf("Error adding question: %v", err)
+		http.Error(w, "Failed to add question", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/admin", http.StatusSeeOther)
+}
+
+func deleteQuestion(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	id := r.FormValue("id")
+
+	_, err := db.Exec("DELETE FROM questions WHERE id = ?", id)
+	if err != nil {
+		log.Printf("Error deleting question: %v", err)
+		http.Error(w, "Failed to delete question", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/admin", http.StatusSeeOther)
 }

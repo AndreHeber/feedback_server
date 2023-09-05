@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Admin Page</title>
+</head>
+<body>
+	<h1>Admin Page</h1>
+	<h2>Add Question</h2>
+	<form action="/admin/add" method="post">
+		<label for="question">Question</label>
+		<input type="text" id="question" name="question">
+		<br>
+		<label for="type">Type</label>
+		<select id="type" name="type">
+			<option value="numeric">Numeric</option>
+			<option value="text">Text</option>
+		</select>
+		<br>
+		<input type="submit" value="Add">
+	</form>
+	<h2>Current Questions</h2>
+	<ul>
+		{{range .}}
+		<li>
+			{{.question}} ({{.type}})
+			<form action="/admin/delete" method="post" style="display: inline;">
+				<input type="hidden" name="id" value="{{.id}}">
+				<input type="submit" value="Delete">
+			</form>
+		</li>
+		{{end}}
+	</ul>
+</body>
+</html>
