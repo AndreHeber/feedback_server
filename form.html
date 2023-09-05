@@ -6,15 +6,15 @@
 <body>
 	<h1>Feedback Form</h1>
 	<form action="/submit" method="post">
-		<p>Question 1:
-			<input type="number" name="answer1" required>
-		</p>
-		<p>Question 2:
-			<input type="number" name="answer2" required>
-		</p>
-		<p>Question 3:
-			<input type="number" name="answer3" required>
-		</p>
+		{{range .}}
+			<label for="q{{.id}}">{{.question}}</label>
+			{{if eq .type "numeric"}}
+				<input type="number" id="q{{.id}}" name="q{{.id}}" min="1" max="5">
+			{{else if eq .type "text"}}
+				<textarea id="q{{.id}}" name="q{{.id}}"></textarea>
+			{{end}}
+			<br>
+		{{end}}
 		<input type="submit" value="Submit">
 	</form>
 </body>
